@@ -45,6 +45,24 @@ public class ProjectsController : ControllerBase
         return Ok(project);
     }
 
+    [HttpPut("{id:int}")]
+    public ActionResult<Project> Update(int id, Project updatedProject)
+    {
+        var existingProject = Projects.FirstOrDefault(p => p.Id == id);
+
+        if (existingProject is null)
+        {
+            return NotFound();
+        }
+
+        existingProject.Name = updatedProject.Name;
+        existingProject.Description = updatedProject.Description;
+        existingProject.Technology = updatedProject.Technology;
+        existingProject.Status = updatedProject.Status;
+
+        return Ok(existingProject);
+    }
+
     [HttpPost]
     public ActionResult<Project> Create(Project project)
     {
