@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic.FileIO;
 using Portfolio.Api.Models;
+using Portfolio.Api.Services;
 
 namespace Portfolio.Api.Controllers;
 
@@ -7,37 +9,23 @@ namespace Portfolio.Api.Controllers;
 [Route("api/[controller]")]
 public class ProjectsController : ControllerBase
 {
-    private static readonly List<Project> Projects = [
-        new Project
-        {
-            Id = 1,
-            Name = "Portfolio API",
-            Description = "A REST API built with ASP.NET Core.",
-            Technology = "C# and ASP.NET Core",
-            Status = "In Progress"
-        },
-        new Project
-        {
-            Id = 2,
-            Name = "Full-Stack DevOps Portfolio",
-            Description = "A portfolio application with automated builds and deployment",
-            Technology = "React, ASP.NET Core, Docker",
-            Status = "Planned"
-        }
-    ];
+    private readonly IProjectService _projectService;
 
-    private static int _nextId = 3;
+    public ProjectsController(IProjectService projectService)
+    {
+        _projectService = projectService;
+    }
 
     [HttpGet]
     public ActionResult<IEnumerable<Project>> Get()
     {
-        return Ok(Projects);
+        return Ok(_projectService.GetAll());
     }
 
     [HttpGet("{id:int}")]
     public ActionResult<Project> GetById(int id)
     {
-        var project = Projects.FirstOrDefault(p => p.Id == id);
+        var project = _projectService.GetById(id);
 
         if (project is null)
             return NotFound();
@@ -45,10 +33,22 @@ public class ProjectsController : ControllerBase
         return Ok(project);
     }
 
+    [HttpPost]
+    public ActionResult<Project> Create(Project project)
+    {
+        var createdProject = _projectService.Create(project);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = createdProject.Id },
+            createdProject
+        );
+    }
+
     [HttpPut("{id:int}")]
     public ActionResult<Project> Update(int id, Project updatedProject)
     {
-        var existingProject = Projects.FirstOrDefault(p => p.Id == id);
+        var existingProject = _projectService.Update(id, updatedProject);
 
         if (existingProject is null)
         {
@@ -66,27 +66,13 @@ public class ProjectsController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        var existingProject = Projects.FirstOrDefault(p => p.Id == id);
+        var deleted = _projectService.Delete(id);
 
-        if (existingProject is null)
+        if (!deleted)
             return NotFound();
-
-        Projects.Remove(existingProject);
 
         return NoContent();
     }
 
-    [HttpPost]
-    public ActionResult<Project> Create(Project project)
-    {
-        project.Id = _nextId++;
 
-        Projects.Add(project);
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = project.Id },
-            project
-        );
-    }
 }
