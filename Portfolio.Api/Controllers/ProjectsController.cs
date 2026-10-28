@@ -34,6 +34,17 @@ public class ProjectsController : ControllerBase
         return Ok(Projects);
     }
 
+    [HttpGet("{id:int}")]
+    public ActionResult<Project> GetById(int id)
+    {
+        var project = Projects.FirstOrDefault(p => p.Id == id);
+
+        if (project is null)
+            return NotFound();
+
+        return Ok(project);
+    }
+
     [HttpPost]
     public ActionResult<Project> Create(Project project)
     {
@@ -42,7 +53,7 @@ public class ProjectsController : ControllerBase
         Projects.Add(project);
 
         return CreatedAtAction(
-            nameof(Get),
+            nameof(GetById),
             new { id = project.Id },
             project
         );
