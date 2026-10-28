@@ -40,10 +40,13 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "No staged changes to commit." -ForegroundColor Yellow
     exit 0
 }
+elseif ($LASTEXITCODE -ne 1) {
+    throw "Could not check staged changes."
+}
 
 $ConfirmCommit = Read-Host "`nCommit and push these changes? (y/n)"
 
-if ($ConfirmCommit -ne "y") {
+if ($ConfirmCommit -notmatch '^[Yy]$') {
     Write-Host "Cancelled. Staged changes are preserved." `
         -ForegroundColor Yellow
     exit 0
