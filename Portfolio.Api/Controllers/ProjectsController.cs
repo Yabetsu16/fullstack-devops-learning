@@ -63,6 +63,19 @@ public class ProjectsController : ControllerBase
         return Ok(existingProject);
     }
 
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        var existingProject = Projects.FirstOrDefault(p => p.Id == id);
+
+        if (existingProject is null)
+            return NotFound();
+
+        Projects.Remove(existingProject);
+
+        return NoContent();
+    }
+
     [HttpPost]
     public ActionResult<Project> Create(Project project)
     {
