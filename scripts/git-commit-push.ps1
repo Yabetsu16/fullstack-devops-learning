@@ -4,7 +4,9 @@ param(
     [string]$Message,
 
     [Parameter(Position = 1)]
-    [string[]]$Files = @(".")
+    [string[]]$Files = @("."),
+
+    [switch]$SkipDiff
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,17 +24,21 @@ Write-Host "`n=== Git Status ===" -ForegroundColor Cyan
 git status
 if ($LASTEXITCODE -ne 0) { throw "Git status failed." }
 
-Write-Host "`n=== Current Changes ===" -ForegroundColor Cyan
-git diff
-if ($LASTEXITCODE -ne 0) { throw "Git diff failed." }
+if (-not $SkipDiff) {
+    Write-Host "`n=== Current Changes ===" -ForegroundColor Cyan
+    git diff
+    if ($LASTEXITCODE -ne 0) { throw "Git diff failed." }
+}
 
 Write-Host "`n=== Staging Files ===" -ForegroundColor Cyan
 git add -- $Files
 if ($LASTEXITCODE -ne 0) { throw "Git add failed." }
 
-Write-Host "`n=== Staged Changes ===" -ForegroundColor Cyan
-git diff --cached
-if ($LASTEXITCODE -ne 0) { throw "Staged diff failed." }
+if (-not $SkipDiff) {
+    Write-Host "`n=== Staged Changes ===" -ForegroundColor Cyan
+    git diff --cached
+    if ($LASTEXITCODE -ne 0) { throw "Staged diff failed." }
+}
 
 # Avoid an empty commit
 git diff --cached --quiet
