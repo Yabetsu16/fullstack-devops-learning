@@ -26,4 +26,18 @@ jobs:
               run: dotnet build ./Portfolio.Api.Tests/Portfolio.Api.Tests.csproj --no-restore
 
             - name: Run unit tests
-              run: dotnet test ./Portfolio.Api.Tests/Portfolio.Api.Tests.csproj --no-build --verbosity normal
+              run: >
+                  dotnet test ./Portfolio.Api.Tests/Portfolio.Api.Tests.csproj 
+                  --no-build 
+                  --logger "trx;LogFileName=test-results.trx"
+                  --results-directory ./TestResults
+                  --verbosity normal
+
+            - name: Upload test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dotnet-test-results
+                  path: ./TestResults/*.trx
+                  if-no-files-found: ignore
+                  retention-days: 7
