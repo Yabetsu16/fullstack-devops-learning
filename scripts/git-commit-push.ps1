@@ -4,7 +4,7 @@ param(
     [string]$Message,
 
     [Parameter(Position = 1)]
-    [string[]]$Files = @("."),
+    [string[]]$Files = @(),
 
     [switch]$SkipDiff
 )
@@ -31,13 +31,25 @@ if (-not $SkipDiff) {
 }
 
 Write-Host "`n=== Staging Files ===" -ForegroundColor Cyan
-git add -- $Files
-if ($LASTEXITCODE -ne 0) { throw "Git add failed." }
 
-if (-not $SkipDiff) {
-    Write-Host "`n=== Staged Changes ===" -ForegroundColor Cyan
-    git diff --cached
-    if ($LASTEXITCODE -ne 0) { throw "Staged diff failed." }
+if ($Files.Count -eq 0 -or ($Files.Count -eq 1 -and $Files[0] -eq ".")) {
+    Write-Host "No specific files provided. Staging all changes:" `
+        -ForegroundColor Yellow
+    
+    git status --short
+    if ($LASTEXITCODE -ne 0) { throw "Git status failed."}
+
+    git add -A
+}
+else {
+    git add -- $Files
+    if ($LASTEXITCODE -ne 0) { throw "Git add failed." }
+
+    if (-not $SkipDiff) {
+        Write-Host "`n=== Staged Changes ===" -ForegroundColor Cyan
+        git diff --cached
+        if ($LASTEXITCODE -ne 0) { throw "Staged diff failed." }
+    }
 }
 
 # Avoid an empty commit
